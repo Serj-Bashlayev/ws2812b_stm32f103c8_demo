@@ -69,6 +69,20 @@ int ws2812b_send(void);
 //завершена успешно
 int ws2812b_is_ready(void);
 
+// Корнвертер из HSV в RGB в целочисленной арифмерите
+//
+// Взял отсюда:
+// Статья https://habr.com/post/257131/
+// Ссылка https://drive.google.com/file/d/0B5dbvc_yPqJHQ2FEUXpkR3NocnM/view
+// Оригинальный алгоритм немного переделан, а именно изменен механизм возврата значения компонент R, G, B
+// 
+// hue: 0..360
+// sat: 0..255
+// val: 0..255
+// rc: Red
+// gc: Green
+// bc: Blue
+void HSV_to_RGB(int hue, int sat, int val, uint8_t *rc, uint8_t *gc, uint8_t *bc);
 
 #endif
 
