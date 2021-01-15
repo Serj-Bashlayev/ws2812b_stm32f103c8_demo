@@ -35,7 +35,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-#include "stm32f10x.h"
+//#include "stm32f10x.h"
+#include "stm32f103xb.h"
 #include "ws2812b.h"
 #include "ws2812b_config.h"
 
@@ -63,9 +64,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   #define DMA1_Channelx_IRQn      DMA1_Channel5_IRQn
   #define DMA1_Channelx_IRQHandler        DMA1_Channel5_IRQHandler
 
-  #define DMA_CCRx_EN             DMA_CCR5_EN
-  #define DMA_CCRx_TCIE           DMA_CCR5_TCIE
-
   #define DMA_IFCR_CTEIFx         DMA_IFCR_CTEIF5
   #define DMA_IFCR_CHTIFx         DMA_IFCR_CHTIF5
   #define DMA_IFCR_CTCIFx         DMA_IFCR_CTCIF5
@@ -92,9 +90,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   #define DMA1_Channelx           DMA1_Channel7
   #define DMA1_Channelx_IRQn      DMA1_Channel7_IRQn
   #define DMA1_Channelx_IRQHandler        DMA1_Channel7_IRQHandler
-
-  #define DMA_CCRx_EN             DMA_CCR7_EN
-  #define DMA_CCRx_TCIE           DMA_CCR7_TCIE
 
   #define DMA_IFCR_CTEIFx         DMA_IFCR_CTEIF7
   #define DMA_IFCR_CHTIFx         DMA_IFCR_CHTIF7
@@ -124,9 +119,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   #define DMA1_Channelx_IRQn      DMA1_Channel1_IRQn
   #define DMA1_Channelx_IRQHandler        DMA1_Channel1_IRQHandler
 
-  #define DMA_CCRx_EN             DMA_CCR1_EN
-  #define DMA_CCRx_TCIE           DMA_CCR1_TCIE
-
   #define DMA_IFCR_CTEIFx         DMA_IFCR_CTEIF1
   #define DMA_IFCR_CHTIFx         DMA_IFCR_CHTIF1
   #define DMA_IFCR_CTCIFx         DMA_IFCR_CTCIF1
@@ -153,9 +145,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   #define DMA1_Channelx           DMA1_Channel7
   #define DMA1_Channelx_IRQn      DMA1_Channel7_IRQn
   #define DMA1_Channelx_IRQHandler        DMA1_Channel7_IRQHandler
-
-  #define DMA_CCRx_EN             DMA_CCR7_EN
-  #define DMA_CCRx_TCIE           DMA_CCR7_TCIE
 
   #define DMA_IFCR_CTEIFx         DMA_IFCR_CTEIF7
   #define DMA_IFCR_CHTIFx         DMA_IFCR_CHTIF7
@@ -189,7 +178,7 @@ void ws2812b_init(void)
   
   
   /********* Настойка таймера TIM2 *********/
-  //Разрешаем таймеру управлять выводом PA1
+  //Разрешаем таймеру управлять выводом PAx
   TIM2->CCER |= TIM_CCER_CCxE;    //Разрешаем
   
 #ifdef WS2812B_OUTPUT_INVERSE
@@ -215,9 +204,9 @@ void ws2812b_init(void)
   DMA1_Channelx->CPAR = (uint32_t)(&TIM2->CCRx); //Куда пишем
   DMA1_Channelx->CMAR = (uint32_t)(led_array); //откуда берем
   
-  DMA1_Channelx->CCR = DMA_CCR7_PSIZE_0 //регистр переферии 16 бит
-    | DMA_CCR7_MINC //режим инкремента указателя памяти
-    | DMA_CCR7_DIR; //напревление передачи из памяти в переферию
+  DMA1_Channelx->CCR = DMA_CCR_PSIZE_0 //регистр переферии 16 бит
+    | DMA_CCR_MINC //режим инкремента указателя памяти
+    | DMA_CCR_DIR; //напревление передачи из памяти в переферию
   
   //Разрешаем обработку прерываний
   NVIC_EnableIRQ(TIM2_IRQn); //от таймера
@@ -289,7 +278,7 @@ int ws2812b_send(void)
     flag_rdy = 0;
     
     //Настраиваем передачу данных
-    DMA1_Channelx->CCR &= ~(DMA_CCRx_EN); //Отключаем канал DMA
+    DMA1_Channelx->CCR &= ~(DMA_CCR_EN); //Отключаем канал DMA
     DMA1_Channelx->CNDTR = sizeof(led_array); //Устанавливаем количество данных
     
     //Таймер считает до WS2812B_TIMER_AAR, таким образом
@@ -306,10 +295,10 @@ int ws2812b_send(void)
     DMA1->IFCR = DMA_IFCR_CTEIFx | DMA_IFCR_CHTIFx 
       | DMA_IFCR_CTCIFx | DMA_IFCR_CGIFx; //Очищаем все флаги прерываний DMA
     
-    DMA1_Channelx->CCR |= DMA_CCRx_TCIE; //прерывание завершения передачи
+    DMA1_Channelx->CCR |= DMA_CCR_TCIE; //прерывание завершения передачи
     
     //Включаем канал DMA, тем самым начинаем передачу данных
-    DMA1_Channelx->CCR |= DMA_CCRx_EN; 
+    DMA1_Channelx->CCR |= DMA_CCR_EN; 
     return 0;
   }
   else
@@ -339,7 +328,7 @@ static void bus_retcode(void)
 //Суда попадаем после завершения передачи данных
 void DMA1_Channelx_IRQHandler(void)
 {
-  DMA1_Channelx->CCR &= ~(DMA_CCRx_EN); //Отключаем канал DMA
+  DMA1_Channelx->CCR &= ~(DMA_CCR_EN); //Отключаем канал DMA
   
   DMA1->IFCR = DMA_IFCR_CTEIFx | DMA_IFCR_CHTIFx 
     | DMA_IFCR_CTCIFx | DMA_IFCR_CGIFx; //Сбрасываем все флаги прерываний

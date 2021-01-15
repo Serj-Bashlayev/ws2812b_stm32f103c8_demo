@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 
 //Количество светодиодов в ленте
-#define WS2812B_NUM_LEDS        144
+#define WS2812B_NUM_LEDS        50
 
 //Инициализация интерфейса ws2812b
 void ws2812b_init(void);
